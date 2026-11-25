@@ -1,5 +1,6 @@
 package com.unsa.idnp_lab11.servicio
 
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -10,9 +11,14 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * Punto 1: servicio en primer plano que sostiene el temporizador de la sesion
@@ -20,6 +26,10 @@ import kotlinx.coroutines.flow.asStateFlow
  * "specialUse".
  */
 class TemporizadorService : Service() {
+
+    private val serviceJob = Job()
+    private val serviceScope = CoroutineScope(Dispatchers.Default + serviceJob)
+    private var timerJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -38,6 +48,7 @@ class TemporizadorService : Service() {
         if (inicioMonotonico == 0L) {
             inicioMonotonico = SystemClock.elapsedRealtime()
             _inicio.value = System.currentTimeMillis()
+            iniciarActualizacionNotificacion()
         }
         val segundos = (SystemClock.elapsedRealtime() - inicioMonotonico) / 1000
         val notificacion = NotificacionTemporizador.construir(this, segundos)
@@ -52,8 +63,28 @@ class TemporizadorService : Service() {
                 "publicada, tiempo=${NotificacionTemporizador.formatear(segundos)}")
     }
 
+    private fun iniciarActualizacionNotificacion() {
+        timerJob?.cancel()
+        timerJob = serviceScope.launch {
+            while (inicioMonotonico != 0L) {
+                delay(1000L)
+                if (inicioMonotonico == 0L) break
+                val segundos = (SystemClock.elapsedRealtime() - inicioMonotonico) / 1000
+                val notificacion = NotificacionTemporizador.construir(this@TemporizadorService, segundos)
+                try {
+                    val gestor = getSystemService(NotificationManager::class.java)
+                    gestor?.notify(NotificacionTemporizador.ID_NOTIFICACION, notificacion)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error al actualizar notificación", e)
+                }
+            }
+        }
+    }
+
     override fun onDestroy() {
         Log.i(TAG, "onDestroy: servicio destruido")
+        timerJob?.cancel()
+        serviceJob.cancel()
         inicioMonotonico = 0L
         _inicio.value = null
         super.onDestroy()
