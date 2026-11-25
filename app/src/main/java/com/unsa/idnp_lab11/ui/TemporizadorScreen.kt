@@ -106,9 +106,20 @@ fun TemporizadorScreen(inicio: Long?, modifier: Modifier = Modifier) {
             }
         }
 
-        Button(onClick = ::alPulsarIniciar, enabled = !activo,
-            modifier = Modifier.fillMaxWidth()) {
-            Text(if (activo) "Temporizador en curso" else "Iniciar temporizador")
+        if (activo) {
+            Button(
+                onClick = { TemporizadorService.detener(context) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Detener temporizador", color = MaterialTheme.colorScheme.onError)
+            }
+        } else {
+            Button(onClick = ::alPulsarIniciar, modifier = Modifier.fillMaxWidth()) {
+                Text("Iniciar temporizador")
+            }
         }
 
         if (permisoDenegado) {

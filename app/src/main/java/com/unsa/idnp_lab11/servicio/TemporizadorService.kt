@@ -40,6 +40,7 @@ class TemporizadorService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACCION_INICIAR -> iniciarEnPrimerPlano()
+            ACCION_DETENER -> detenerServicio()
         }
         return START_NOT_STICKY
     }
@@ -61,6 +62,13 @@ class TemporizadorService : Service() {
         )
         Log.i(TAG, "startForeground: notificación ${NotificacionTemporizador.ID_NOTIFICACION} " +
                 "publicada, tiempo=${NotificacionTemporizador.formatear(segundos)}")
+    }
+
+    private fun detenerServicio() {
+        timerJob?.cancel()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+        Log.i(TAG, "Servicio detenido explícitamente y notificación removida")
     }
 
     private fun iniciarActualizacionNotificacion() {
@@ -87,6 +95,7 @@ class TemporizadorService : Service() {
         serviceJob.cancel()
         inicioMonotonico = 0L
         _inicio.value = null
+        stopForeground(STOP_FOREGROUND_REMOVE)
         super.onDestroy()
     }
 
@@ -96,6 +105,7 @@ class TemporizadorService : Service() {
     companion object {
         const val TAG = "Lab11FGS"
         const val ACCION_INICIAR = "com.unsa.idnp_lab11.INICIAR"
+        const val ACCION_DETENER = "com.unsa.idnp_lab11.DETENER"
 
         private var inicioMonotonico = 0L
         private val _inicio = MutableStateFlow<Long?>(null)
@@ -108,6 +118,14 @@ class TemporizadorService : Service() {
                 .setAction(ACCION_INICIAR)
             ContextCompat.startForegroundService(context, intent)
             Log.i(TAG, "startForegroundService solicitado desde la UI")
+        }
+
+        /** Punto 6: detiene el servicio y remueve la notificación. */
+        fun detener(context: Context) {
+            val intent = Intent(context, TemporizadorService::class.java)
+                .setAction(ACCION_DETENER)
+            context.startService(intent)
+            Log.i(TAG, "startService (detener) solicitado desde la UI")
         }
     }
 }
