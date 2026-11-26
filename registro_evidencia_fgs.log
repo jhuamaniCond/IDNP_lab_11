@@ -1,0 +1,11 @@
+--------- beginning of main
+11-25 21:14:34.602 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:16:35 (995 s) | hilo=DefaultDispatcher-worker-2
+11-25 21:14:39.678 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:16:40 (1000 s) | hilo=DefaultDispatcher-worker-2
+11-25 21:14:44.753 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:16:45 (1005 s) | hilo=DefaultDispatcher-worker-2
+11-25 21:14:49.832 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:16:50 (1010 s) | hilo=DefaultDispatcher-worker-2
+11-25 21:14:54.916 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:16:55 (1015 s) | hilo=DefaultDispatcher-worker-2
+11-25 21:14:59.994 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:17:00 (1020 s) | hilo=DefaultDispatcher-worker-2
+11-25 21:15:05.067 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:17:05 (1025 s) | hilo=DefaultDispatcher-worker-2
+11-25 21:15:10.145 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:17:10 (1030 s) | hilo=DefaultDispatcher-worker-2
+11-25 21:15:15.221 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:17:15 (1035 s) | hilo=DefaultDispatcher-worker-2
+11-25 21:15:20.296 D/Lab11FGS(27056): Ejecución continua: tiempo transcurrido = 00:17:20 (1040 s) | hilo=DefaultDispatcher-worker-2

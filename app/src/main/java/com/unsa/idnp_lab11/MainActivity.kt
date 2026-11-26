@@ -1,6 +1,7 @@
 package com.unsa.idnp_lab11
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,6 +19,7 @@ import com.unsa.idnp_lab11.ui.TemporizadorScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.i(TemporizadorService.TAG, "MainActivity onCreate(): Actividad creada")
         enableEdgeToEdge()
         setContent {
             MaterialTheme(colorScheme = lightColorScheme()) {
@@ -27,5 +29,30 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.i(TemporizadorService.TAG, "MainActivity onStart(): Actividad visible en pantalla")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.i(TemporizadorService.TAG, "MainActivity onResume(): Actividad en primer plano interactiva")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i(TemporizadorService.TAG, "MainActivity onPause(): Actividad perdiendo el foco")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i(TemporizadorService.TAG, "MainActivity onStop(): [SEGUNDO PLANO] La actividad ya no es visible. El servicio debe continuar ejecutándose.")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(TemporizadorService.TAG, "MainActivity onDestroy(): Actividad destruida")
     }
 }

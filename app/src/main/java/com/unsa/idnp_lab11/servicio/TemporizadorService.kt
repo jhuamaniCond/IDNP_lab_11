@@ -33,11 +33,12 @@ class TemporizadorService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.i(TAG, "onCreate: servicio creado")
+        Log.i(TAG, "onCreate: servicio creado | PID=${android.os.Process.myPid()} | Hilo=${Thread.currentThread().name}")
         CanalNotificaciones.crear(this)              // punto 2
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.i(TAG, "onStartCommand: accion=${intent?.action} | startId=$startId")
         when (intent?.action) {
             ACCION_INICIAR -> iniciarEnPrimerPlano()
             ACCION_DETENER -> detenerServicio()
@@ -49,6 +50,7 @@ class TemporizadorService : Service() {
         if (inicioMonotonico == 0L) {
             inicioMonotonico = SystemClock.elapsedRealtime()
             _inicio.value = System.currentTimeMillis()
+            Log.i(TAG, "Temporizador iniciado | epochMs=${_inicio.value} | inicioMonotonico=$inicioMonotonico")
             iniciarActualizacionNotificacion()
         }
         val segundos = (SystemClock.elapsedRealtime() - inicioMonotonico) / 1000
@@ -60,20 +62,23 @@ class TemporizadorService : Service() {
         ServiceCompat.startForeground(
             this, NotificacionTemporizador.ID_NOTIFICACION, notificacion, tipo
         )
-        Log.i(TAG, "startForeground: notificación ${NotificacionTemporizador.ID_NOTIFICACION} " +
-                "publicada, tiempo=${NotificacionTemporizador.formatear(segundos)}")
+        Log.i(TAG, "startForeground exitoso: Notificación ID ${NotificacionTemporizador.ID_NOTIFICACION} " +
+                "publicada con tiempo inicial: ${NotificacionTemporizador.formatear(segundos)}")
     }
 
     private fun detenerServicio() {
+        val segundos = if (inicioMonotonico != 0L) (SystemClock.elapsedRealtime() - inicioMonotonico) / 1000 else 0L
+        Log.i(TAG, "detenerServicio: deteniendo temporizador con duración acumulada de ${NotificacionTemporizador.formatear(segundos)}")
         timerJob?.cancel()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
-        Log.i(TAG, "Servicio detenido explícitamente y notificación removida")
+        Log.i(TAG, "Servicio detenido explícitamente y notificación removida del panel")
     }
 
     private fun iniciarActualizacionNotificacion() {
         timerJob?.cancel()
         timerJob = serviceScope.launch {
+            Log.i(TAG, "Corrutina del temporizador iniciada en Dispatchers.Default | Hilo=${Thread.currentThread().name}")
             while (inicioMonotonico != 0L) {
                 delay(1000L)
                 if (inicioMonotonico == 0L) break
@@ -82,6 +87,11 @@ class TemporizadorService : Service() {
                 try {
                     val gestor = getSystemService(NotificationManager::class.java)
                     gestor?.notify(NotificacionTemporizador.ID_NOTIFICACION, notificacion)
+
+                    // Registro periódico de latido (heartbeat) cada 5 segundos para evidenciar ejecución continua sin saturar Logcat
+                    if (segundos % 5L == 0L) {
+                        Log.d(TAG, "Ejecución continua: tiempo transcurrido = ${NotificacionTemporizador.formatear(segundos)} ($segundos s) | hilo=${Thread.currentThread().name}")
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error al actualizar notificación", e)
                 }
@@ -90,7 +100,7 @@ class TemporizadorService : Service() {
     }
 
     override fun onDestroy() {
-        Log.i(TAG, "onDestroy: servicio destruido")
+        Log.i(TAG, "onDestroy: destruyendo servicio y liberando recursos del sistema")
         timerJob?.cancel()
         serviceJob.cancel()
         inicioMonotonico = 0L
